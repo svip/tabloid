@@ -1,0 +1,27 @@
+body {
+	font-family: sans-serif;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100ch;
+	overflow: hidden;
+	background: red;
+}
+a {
+	color: #000;
+	text-decoration: none;
+}
+@keyframes headline {
+	from {
+		transform: rotate(-250deg);
+	}
+}
+#headline {
+	font-size: 30pt;
+	font-weight: bold;
+	animation-duration: 0.5s;
+	animation-name: headline;
+	background: orange;
+	padding: 5px 10px;
+	margin-top: -5ch;
+}

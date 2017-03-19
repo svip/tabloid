@@ -14,39 +14,10 @@ const PAGE = `<!doctype html>
 <head>
 <title>{{.Headline1.Headline}}: {{.Headline2.Headline}}</title>
 <meta charset="utf-8" />
-<style>
-body {
-	font-family: sans-serif;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	height: 100ch;
-	overflow: hidden;
-	background: red;
-}
-a {
-	color: #000;
-	text-decoration: none;
-}
-@keyframes headline {
-	from {
-		transform: rotate(-250deg);
-	}
-}
-#headline {
-	font-size: 30pt;
-	font-weight: bold;
-	animation-duration: 0.5s;
-	animation-name: headline;
-	transform: rotate({{.Degree}}deg);
-	background: orange;
-	padding: 5px 10px;
-	margin-top: -5ch;
-}
-</style>
+<link rel="stylesheet" href="/media/styles.css" />
 </head>
 <body>
-<div id="headline">{{.Headline1.Print}}: {{.Headline2.Print}}</div>
+<div id="headline" style="transform: rotate({{.Degree}}deg);">{{.Headline1.Print}}: {{.Headline2.Print}}</div>
 </body>
 </html>`
 
@@ -96,6 +67,7 @@ func main() {
 	headlines.UpdateHeadlines()
 	
 	http.HandleFunc("/", headlinePage)
+	http.Handle("/media/", http.StripPrefix("/media/", http.FileServer(http.Dir("media/"))))
 	
 	log.Fatal(http.ListenAndServe(":8070", nil))
 }
