@@ -14,6 +14,10 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+// The template we use for printing the headline.
+// Who knows if it's thread safe?!
+var headlineT *template.Template
+
 type Headline struct {
 	Headline string
 	URL      string
@@ -29,9 +33,6 @@ func (h Headline) Print() template.HTML {
 	}
 }
 
-// Global variables that don't need recreating.
-var headlineT *template.Template
-
 // Storage of headlines
 var headlines []Headline
 var tempHeadlines []Headline
@@ -45,24 +46,27 @@ const (
 )
 
 func addHeadlines(text, href string) {
+	// Maybe these should be global as well?
+	// But then again, adding headlines is only done once every hour.
 	re := regexp.MustCompile("(: | - )")
 	reTrim := regexp.MustCompile("[ \n\t]+")
 
 	text = strings.TrimSpace(reTrim.ReplaceAllString(text, " "))
 	s := re.Split(text, -1)
-	for _, sss := range s {
-		sss = strings.TrimSpace(sss)
-		if sss == "" {
+	for _, line := range s {
+		line = strings.TrimSpace(line)
+		if line == "" {
 			continue
 		}
-		r, z := utf8.DecodeRuneInString(sss)
+		// Correctly uppercase the first rune.
+		r, z := utf8.DecodeRuneInString(line)
 		if unicode.IsLetter(r) && unicode.IsLower(r) {
-			sss = string(unicode.ToTitle(r)) + sss[z:]
+			line = string(unicode.ToTitle(r)) + line[z:]
 		}
-		sss = reTrim.ReplaceAllString(sss, " ")
-		log.Println(sss)
+		line = reTrim.ReplaceAllString(line, " ")
+		log.Println(line)
 		//log.Println(href)
-		tempHeadlines = append(tempHeadlines, Headline{sss, href})
+		tempHeadlines = append(tempHeadlines, Headline{line, href})
 	}
 }
 
@@ -71,6 +75,8 @@ func fillFromDomain(newssite newsSite) {
 	var selector string
 	var urlprefix string
 	var urlSelector string
+	
+	// Known sites and their special handling
 	switch newssite {
 	case eb:
 		domain = "http://www.ekstrabladet.dk/"
@@ -88,7 +94,8 @@ func fillFromDomain(newssite newsSite) {
 	default:
 		return
 	}
-
+	
+	// goquery is basically jQuery for Go.
 	doc, err := goquery.NewDocument(domain)
 	if err != nil {
 		log.Println(err)
@@ -102,6 +109,8 @@ func fillFromDomain(newssite newsSite) {
 		} else {
 			url = s.AttrOr("href", "")
 		}
+		
+		// Sometimes the links are not relative.
 		if !strings.HasPrefix(url, "http") {
 			url = fmt.Sprintf("%s%s", urlprefix, url)
 		}
@@ -110,6 +119,8 @@ func fillFromDomain(newssite newsSite) {
 }
 
 func UpdateHeadlines() {
+	// Work on the temporary list before copying it to the main one.
+	// For some suggestion of thread-safety.  Wat?
 	tempHeadlines = make([]Headline, 0)
 
 	fillFromDomain(eb)
@@ -135,6 +146,7 @@ func GetHeadline(r *rand.Rand) (Headline, Headline) {
 }
 
 func init() {
+	// Prepare our global variable.
 	var err error
 	headlineT, err = template.New("headline").Parse(`<a href="{{.URL}}">{{.Headline}}</a>`)
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// This is how simple an HTML page can be!  Woo!
 const PAGE = `<!doctype html>
 <html>
 <head>
@@ -21,11 +22,14 @@ const PAGE = `<!doctype html>
 </body>
 </html>`
 
+// Global fun.
 var t *template.Template
 var rnd *rand.Rand
 var lastSeed time.Time
 
 func checkSeed() {
+	// Every hour, we update our random seed and
+	// check for new headlines.
 	if time.Since(lastSeed).Hours() >= 1 {
 		lastSeed = time.Now()
 		rnd.Seed(lastSeed.Unix())
@@ -33,6 +37,8 @@ func checkSeed() {
 	}
 }
 
+// Yeah, the end rotation is calculated server side.
+// *sunglasses*
 func getDegree() int {
 	return rnd.Intn(35*2) - 35
 }
@@ -40,6 +46,9 @@ func getDegree() int {
 func HeadlinePage(w http.ResponseWriter, r *http.Request) {
 	checkSeed()
 	headline1, headline2 := headlines.GetHeadline(rnd)
+	
+	// Build the page with the rotation and the two
+	// headlines, that will be combined.
 	err := t.Execute(w, struct {
 		Degree    int
 		Headline1 headlines.Headline
@@ -55,6 +64,7 @@ func HeadlinePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func init() {
+	// Prepare our global variables.
 	var err error
 	t, err = template.New("page").Parse(PAGE)
 	if err != nil {
