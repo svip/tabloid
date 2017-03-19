@@ -1,12 +1,12 @@
 package pages
 
 import (
-	"html/template"
 	"headlines"
-	"math/rand"
-	"time"
-	"net/http"
+	"html/template"
 	"log"
+	"math/rand"
+	"net/http"
+	"time"
 )
 
 const PAGE = `<!doctype html>
@@ -34,14 +34,14 @@ func checkSeed() {
 }
 
 func getDegree() int {
-	return rnd.Intn(35*2)-35
+	return rnd.Intn(35*2) - 35
 }
 
 func HeadlinePage(w http.ResponseWriter, r *http.Request) {
 	checkSeed()
 	headline1, headline2 := headlines.GetHeadline(rnd)
-	err := t.Execute(w, struct{
-		Degree int
+	err := t.Execute(w, struct {
+		Degree    int
 		Headline1 headlines.Headline
 		Headline2 headlines.Headline
 	}{
@@ -60,9 +60,9 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	lastSeed = time.Now()
 	rnd = rand.New(rand.NewSource(lastSeed.Unix()))
-	
+
 	headlines.UpdateHeadlines()
 }

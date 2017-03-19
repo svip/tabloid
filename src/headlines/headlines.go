@@ -1,22 +1,22 @@
 package headlines
 
 import (
-	"html/template"
 	"bytes"
+	"fmt"
+	"html/template"
+	"log"
+	"math/rand"
 	"regexp"
 	"strings"
 	"unicode"
 	"unicode/utf8"
-	"log"
-	"fmt"
-	"math/rand"
-	
+
 	"github.com/PuerkitoBio/goquery"
 )
 
 type Headline struct {
 	Headline string
-	URL string
+	URL      string
 }
 
 func (h Headline) Print() template.HTML {
@@ -47,7 +47,7 @@ const (
 func addHeadlines(text, href string) {
 	re := regexp.MustCompile("(: | - )")
 	reTrim := regexp.MustCompile("[ \n\t]+")
-	
+
 	text = strings.TrimSpace(reTrim.ReplaceAllString(text, " "))
 	s := re.Split(text, -1)
 	for _, sss := range s {
@@ -88,13 +88,13 @@ func fillFromDomain(newssite newsSite) {
 	default:
 		return
 	}
-	
+
 	doc, err := goquery.NewDocument(domain)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	
+
 	doc.Find(selector).Each(func(i int, s *goquery.Selection) {
 		var url string
 		if urlSelector != "" {
@@ -107,17 +107,17 @@ func fillFromDomain(newssite newsSite) {
 		}
 		addHeadlines(s.Text(), url)
 	})
-}	
+}
 
 func UpdateHeadlines() {
 	tempHeadlines = make([]Headline, 0)
-	
+
 	fillFromDomain(eb)
 	fillFromDomain(bt)
 	fillFromDomain(dr)
-	
+
 	headlines = tempHeadlines
-	
+
 	if len(headlines) <= 0 {
 		log.Fatal("No headlines!")
 	}
@@ -135,7 +135,7 @@ func GetHeadline(r *rand.Rand) (Headline, Headline) {
 }
 
 func init() {
-	var err error 
+	var err error
 	headlineT, err = template.New("headline").Parse(`<a href="{{.URL}}">{{.Headline}}</a>`)
 	if err != nil {
 		log.Fatal(err)
