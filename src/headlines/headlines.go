@@ -72,9 +72,9 @@ func addHeadlines(text, href string) {
 	// Also split on ".", ":" and " -", all followed by a space.
 	// Or rather, this doesn't split but finds the headlines we're
 	// looking for.  Because you cannot split on something you wish to include.
-	re := regexp.MustCompile("(([^!\\?]+?[!\\?]) |(.+?)([:\\.] | [-–] |[:\\.] [-–] |$))")
+	re := regexp.MustCompile("(.+?([!\\?;:\\.] +| +[-–] +|[;:\\.] +[-–] +|$))")
 	reTrim := regexp.MustCompile("[ \n\t]+")
-	reOrim := regexp.MustCompile("(:$|^[-–] | [-–]$)")
+	reOrim := regexp.MustCompile("([;:\\.]$|^[-–] | [-–]$)")
 
 	text = strings.TrimSpace(reTrim.ReplaceAllString(text, " "))
 	s := re.FindAllString(text, -1)
