@@ -69,10 +69,10 @@ const (
 func addHeadlines(text, href string) {
 	// Adding headlines is only done once every hour.
 	// Include "!" and "?" in headlines, but also split upon them.
-	// Also split on ".", ":" and " -", all followed by a space.
+	// Also split on ";", ":" and " -", all followed by a space.
 	// Or rather, this doesn't split but finds the headlines we're
 	// looking for.  Because you cannot split on something you wish to include.
-	re := regexp.MustCompile("(.+?([!\\?;:\\.] +| +[-–] +|[;:\\.] +[-–] +|$))")
+	re := regexp.MustCompile("(.+?([!\\?;:] +| +[-–] +|[;:] +[-–] +|$))")
 	reTrim := regexp.MustCompile("[ \n\t]+")
 	reOrim := regexp.MustCompile("([;:\\.]$|^[-–] | [-–]$)")
 
