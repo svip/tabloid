@@ -8,9 +8,9 @@ import (
 	"math/rand"
 	"regexp"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -101,7 +101,7 @@ func fillFromDomain(newssite newsSite) {
 	var selector string
 	var urlprefix string
 	var urlSelector string
-	
+
 	// Known sites and their special handling
 	switch newssite {
 	case eb:
@@ -120,7 +120,7 @@ func fillFromDomain(newssite newsSite) {
 	default:
 		return
 	}
-	
+
 	// goquery is basically jQuery for Go.
 	doc, err := goquery.NewDocument(domain)
 	if err != nil {
@@ -135,7 +135,7 @@ func fillFromDomain(newssite newsSite) {
 		} else {
 			url = s.AttrOr("href", "")
 		}
-		
+
 		// Sometimes the links are not relative.
 		if !strings.HasPrefix(url, "http") {
 			url = fmt.Sprintf("%s%s", urlprefix, url)
