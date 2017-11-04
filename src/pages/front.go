@@ -13,12 +13,12 @@ import (
 const PAGE = `<!doctype html>
 <html>
 <head>
-<title>{{.Headline1.Headline}}: {{.Headline2.Headline}}</title>
+<title>{{.Headline1.Headline}}{{.Separator}} {{.Headline2.Headline}}</title>
 <meta charset="utf-8" />
 <link rel="stylesheet" href="/media/styles.css" />
 </head>
 <body>
-<div id="headline" style="transform: rotate({{.Degree}}deg);">{{.Headline1.Print}}: {{.Headline2.Print}}</div>
+<div id="headline" style="transform: rotate({{.Degree}}deg);">{{.Headline1.Print}}{{.Separator}} {{.Headline2.Print}}</div>
 </body>
 </html>`
 
@@ -46,6 +46,10 @@ func getDegree() int {
 func HeadlinePage(w http.ResponseWriter, r *http.Request) {
 	checkSeed()
 	headline1, headline2 := headlines.GetHeadline(rnd)
+	sep := ":"
+	if strings.ContainsAny(headline1[len(headline1)-1:], "?!:") {
+		sep := ""
+	}
 	
 	// Build the page with the rotation and the two
 	// headlines, that will be combined.
@@ -53,10 +57,12 @@ func HeadlinePage(w http.ResponseWriter, r *http.Request) {
 		Degree    int
 		Headline1 headlines.Headline
 		Headline2 headlines.Headline
+		Separator string
 	}{
 		getDegree(),
 		headline1,
 		headline2,
+		sep,
 	})
 	if err != nil {
 		log.Println(err)
