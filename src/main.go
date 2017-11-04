@@ -7,6 +7,9 @@ import (
 )
 
 func main() {
+	// API
+	http.HandleFunc("/api", pages.Api)
+	
 	// Main entry.
 	http.HandleFunc("/", pages.HeadlinePage)
 	
