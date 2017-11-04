@@ -47,6 +47,8 @@ func HeadlinePage(w http.ResponseWriter, r *http.Request) {
 	checkSeed()
 	headline := headlines.GetHeadlineWithRNG(rnd)
 	
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	
 	// Build the page with the rotation and the two
 	// headlines, that will be combined.
 	err := t.Execute(w, struct {

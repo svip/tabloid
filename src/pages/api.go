@@ -12,6 +12,8 @@ func Api(w http.ResponseWriter, r *http.Request) {
 	
 	enc := json.NewEncoder(w)
 	
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	
 	enc.Encode(struct {
 		Headline string
 		URLs     []string
