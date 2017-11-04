@@ -10,6 +10,7 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -17,6 +18,8 @@ import (
 // The template we use for printing the headline.
 // Who knows if it's thread safe?!
 var headlineT *template.Template
+var headlineshT *template.Template
+var headlinestT *template.Template
 
 type Headline struct {
 	Headline string
@@ -31,6 +34,24 @@ func (h Headline) Print() template.HTML {
 		headlineT.Execute(out, h)
 		return template.HTML(out.String())
 	}
+}
+
+type NewHeadline struct {
+	No1       Headline
+	No2       Headline
+	Separator string
+}
+
+func (h NewHeadline) Print() template.HTML {
+	out := bytes.NewBufferString("")
+	headlineshT.Execute(out, h)
+	return template.HTML(out.String())
+}
+
+func (h NewHeadline) Title() template.HTML {
+	out := bytes.NewBufferString("")
+	headlinestT.Execute(out, h)
+	return template.HTML(out.String())
 }
 
 // Storage of headlines
@@ -139,21 +160,40 @@ func UpdateHeadlines() {
 	}
 }
 
-func GetHeadline(r *rand.Rand) (Headline, Headline) {
+func GetHeadlineWithRNG(r *rand.Rand) NewHeadline {
 	no1 := r.Intn(len(headlines))
 	no2 := no1
 	for no1 == no2 {
 		no2 = r.Intn(len(headlines))
 	}
-	//log.Println(headlines[no1].Headline)
-	//log.Println(headlines[no2].Headline)
-	return headlines[no1], headlines[no2]
+	sep := ":"
+	if strings.ContainsAny(headlines[no1].Headline[len(headlines[no1].Headline)-1:], "?!") {
+		sep = ""
+	}
+	return NewHeadline{
+		headlines[no1],
+		headlines[no2],
+		sep,
+	}
+}
+
+func GetHeadline() NewHeadline {
+	rng := rand.New(rand.NewSource(time.Now().Unix()))
+	return GetHeadlineWithRNG(rng)
 }
 
 func init() {
 	// Prepare our global variable.
 	var err error
 	headlineT, err = template.New("headline").Parse(`<a href="{{.URL}}">{{.Headline}}</a>`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	headlineshT, err = template.New("headlines-html").Parse(`{{.No1.Print}}{{.Separator}} {{.No2.Print}}`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	headlinestT, err = template.New("headlines-title").Parse(`{{.No1.Headline}}{{.Separator}} {{.No2.Headline}}`)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -7,19 +7,18 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
-	"strings"
 )
 
 // This is how simple an HTML page can be!  Woo!
 const PAGE = `<!doctype html>
 <html>
 <head>
-<title>{{.Headline1.Headline}}{{.Separator}} {{.Headline2.Headline}}</title>
+<title>{{.Headlines.Title}}</title>
 <meta charset="utf-8" />
 <link rel="stylesheet" href="/media/styles.css" />
 </head>
 <body>
-<div id="headline" style="transform: rotate({{.Degree}}deg);">{{.Headline1.Print}}{{.Separator}} {{.Headline2.Print}}</div>
+<div id="headline" style="transform: rotate({{.Degree}}deg);">{{.Headlines.Print}}</div>
 </body>
 </html>`
 
@@ -46,24 +45,16 @@ func getDegree() int {
 
 func HeadlinePage(w http.ResponseWriter, r *http.Request) {
 	checkSeed()
-	headline1, headline2 := headlines.GetHeadline(rnd)
-	sep := ":"
-	if strings.ContainsAny(headline1.Headline[len(headline1.Headline)-1:], "?!") {
-		sep = ""
-	}
+	headline := headlines.GetHeadlineWithRNG(rnd)
 	
 	// Build the page with the rotation and the two
 	// headlines, that will be combined.
 	err := t.Execute(w, struct {
 		Degree    int
-		Headline1 headlines.Headline
-		Headline2 headlines.Headline
-		Separator string
+		Headlines headlines.NewHeadline
 	}{
 		getDegree(),
-		headline1,
-		headline2,
-		sep,
+		headline,
 	})
 	if err != nil {
 		log.Println(err)
