@@ -48,7 +48,7 @@ func HeadlinePage(w http.ResponseWriter, r *http.Request) {
 	checkSeed()
 	headline1, headline2 := headlines.GetHeadline(rnd)
 	sep := ":"
-	if strings.ContainsAny(headline1.Headline[len(headline1.Headline)-1:], "?!:") {
+	if strings.ContainsAny(headline1.Headline[len(headline1.Headline)-1:], "?!") {
 		sep = ""
 	}
 	

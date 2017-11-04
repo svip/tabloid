@@ -48,11 +48,12 @@ const (
 func addHeadlines(text, href string) {
 	// Maybe these should be global as well?
 	// But then again, adding headlines is only done once every hour.
-	re := regexp.MustCompile("(: | - )")
+	re := regexp.MustCompile("(([^!\\?]+?[!\\?]) |(.+?)(: | [-–] |: [-–] |$))")
 	reTrim := regexp.MustCompile("[ \n\t]+")
+	reOrim := regexp.MustCompile("(:$|^[-–] | [-–]$)")
 
 	text = strings.TrimSpace(reTrim.ReplaceAllString(text, " "))
-	s := re.Split(text, -1)
+	s := re.FindAllString(text, -1)
 	for _, line := range s {
 		line = strings.TrimSpace(line)
 		if line == "" {
@@ -64,6 +65,7 @@ func addHeadlines(text, href string) {
 			line = string(unicode.ToTitle(r)) + line[z:]
 		}
 		line = reTrim.ReplaceAllString(line, " ")
+		line = reOrim.ReplaceAllString(line, "")
 		log.Println(line)
 		//log.Println(href)
 		tempHeadlines = append(tempHeadlines, Headline{line, href})
