@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
+	"strings"
 )
 
 // This is how simple an HTML page can be!  Woo!
@@ -47,8 +48,8 @@ func HeadlinePage(w http.ResponseWriter, r *http.Request) {
 	checkSeed()
 	headline1, headline2 := headlines.GetHeadline(rnd)
 	sep := ":"
-	if strings.ContainsAny(headline1[len(headline1)-1:], "?!:") {
-		sep := ""
+	if strings.ContainsAny(headline1.Headline[len(headline1.Headline)-1:], "?!:") {
+		sep = ""
 	}
 	
 	// Build the page with the rotation and the two
