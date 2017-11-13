@@ -153,11 +153,11 @@ func UpdateHeadlines() {
 	fillFromDomain(bt)
 	fillFromDomain(dr)
 
-	headlines = tempHeadlines
-
-	if len(headlines) <= 0 {
+	if len(tempHeadlines) <= 0 {
 		log.Fatal("No headlines!")
 	}
+
+	headlines = tempHeadlines
 }
 
 func GetHeadlineWithRNG(r *rand.Rand) NewHeadline {

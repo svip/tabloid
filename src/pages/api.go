@@ -7,7 +7,7 @@ import (
 )
 
 func Api(w http.ResponseWriter, r *http.Request) {
-	checkSeed()
+	askToCheckSeed()
 	headline := headlines.GetHeadlineWithRNG(rnd)
 
 	enc := json.NewEncoder(w)
