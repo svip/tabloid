@@ -78,6 +78,11 @@ func addHeadlines(text, href string) {
 
 	text = strings.TrimSpace(reTrim.ReplaceAllString(text, " "))
 	s := re.FindAllString(text, -1)
+	if len(s) < 2 {
+		return // If we don't get at least two headlines from this headline,
+		       // we don't care.  Because it usually means the headline isn't
+		       // good material for our purpose.
+	}
 	for _, line := range s {
 		line = strings.TrimSpace(line)
 		if line == "" {
