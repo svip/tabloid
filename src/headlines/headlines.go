@@ -170,7 +170,7 @@ func UpdateHeadlines() {
 func GetHeadlineWithRNG(r *rand.Rand) NewHeadline {
 	no1 := r.Intn(len(headlines))
 	no2 := no1
-	for no1 == no2 {
+	for headlines[no1].URL == headlines[no2].URL {
 		no2 = r.Intn(len(headlines))
 	}
 	// Always attempt the shortest headline slice first.
