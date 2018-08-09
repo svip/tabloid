@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"headlines"
 	"net/http"
+	"html"
 )
 
 func Api(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +19,7 @@ func Api(w http.ResponseWriter, r *http.Request) {
 		Headline string
 		URLs     []string
 	}{
-		string(headline.Title()),
+		html.UnescapeString(string(headline.Title())),
 		[]string{
 			headline.No1.URL,
 			headline.No2.URL,
