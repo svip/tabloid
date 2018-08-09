@@ -173,13 +173,13 @@ func GetHeadlineWithRNG(r *rand.Rand) NewHeadline {
 	for no1 == no2 {
 		no2 = r.Intn(len(headlines))
 	}
-	sep := ":"
-	if strings.ContainsAny(headlines[no1].Headline[len(headlines[no1].Headline)-1:], "?!") {
-		sep = ""
-	}
 	// Always attempt the shortest headline slice first.
 	if len(headlines[no1].Headline) > len(headlines[no2].Headline) {
 		no1, no2 = no2, no1
+	}
+	sep := ":"
+	if strings.ContainsAny(headlines[no1].Headline[len(headlines[no1].Headline)-1:], "?!") {
+		sep = ""
 	}
 	return NewHeadline{
 		headlines[no1],
