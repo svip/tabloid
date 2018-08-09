@@ -73,7 +73,7 @@ func addHeadlines(text, href string) {
 	// Or rather, this doesn't split but finds the headlines we're
 	// looking for.  Because you cannot split on something you wish to include.
 	re := regexp.MustCompile("(.+?([!\\?;:] +| +[-–] +|[;:] +[-–] +|$))")
-	reTrim := regexp.MustCompile("[ \n\t]+")
+	reTrim := regexp.MustCompile("[ \n\t ]+")
 	reOrim := regexp.MustCompile("([;:\\.]$|^[-–] | [-–]$)")
 	reHref := regexp.MustCompile("[^\\/\\.]+\\.[^\\/\\.]+\\/")
 
