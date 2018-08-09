@@ -67,6 +67,12 @@ const (
 )
 
 func addHeadlines(text, href string) {
+	for _, h := range headlines {
+		if h.URL == href {
+			// Already added.
+			return
+		}
+	}
 	// Adding headlines is only done once every hour.
 	// Include "!" and "?" in headlines, but also split upon them.
 	// Also split on ";", ":" and " -", all followed by a space.
@@ -100,7 +106,6 @@ func addHeadlines(text, href string) {
 		line = reOrim.ReplaceAllString(line, "")
 		line = reHyph.ReplaceAllString(line, "$1$2")
 		log.Println(reHref.FindString(href), line)
-		//log.Println(href)
 		tempHeadlines = append(tempHeadlines, Headline{line, href})
 	}
 }
@@ -162,11 +167,13 @@ func UpdateHeadlines() {
 	fillFromDomain(bt)
 	fillFromDomain(dr)
 
-	if len(tempHeadlines) <= 0 {
+	if len(tempHeadlines) == 0 && len(headlines) == 0 {
 		log.Fatal("No headlines!")
+	} else if len(tempHeadlines) == 0 {
+		log.Println("No headlines in update.")
 	}
 
-	headlines = tempHeadlines
+	headlines = append(headlines, tempHeadlines...)
 }
 
 func GetHeadlineWithRNG(r *rand.Rand) NewHeadline {
