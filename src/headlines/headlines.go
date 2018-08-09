@@ -8,9 +8,9 @@ import (
 	"math/rand"
 	"regexp"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
-	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -80,6 +80,11 @@ func addHeadlines(text, href string) {
 	// Make sure all line breaks are turned into spaces.
 	text = strings.TrimSpace(reTrim.ReplaceAllString(text, " "))
 	s := re.FindAllString(text, -1)
+	if len(s) < 2 {
+		return // If we don't get at least two headlines from this headline,
+		       // we don't care.  Because it usually means the headline isn't
+		       // good material for our purpose.
+	}
 	for _, line := range s {
 		line = strings.TrimSpace(line)
 		if line == "" {
@@ -103,7 +108,7 @@ func fillFromDomain(newssite newsSite) {
 	var selector string
 	var urlprefix string
 	var urlSelector string
-	
+
 	// Known sites and their special handling
 	switch newssite {
 	case eb:
@@ -122,7 +127,7 @@ func fillFromDomain(newssite newsSite) {
 	default:
 		return
 	}
-	
+
 	// goquery is basically jQuery for Go.
 	doc, err := goquery.NewDocument(domain)
 	if err != nil {
@@ -137,7 +142,7 @@ func fillFromDomain(newssite newsSite) {
 		} else {
 			url = s.AttrOr("href", "")
 		}
-		
+
 		// Sometimes the links are not relative.
 		if !strings.HasPrefix(url, "http") {
 			url = fmt.Sprintf("%s%s", urlprefix, url)
@@ -155,11 +160,11 @@ func UpdateHeadlines() {
 	fillFromDomain(bt)
 	fillFromDomain(dr)
 
-	headlines = tempHeadlines
-
-	if len(headlines) <= 0 {
+	if len(tempHeadlines) <= 0 {
 		log.Fatal("No headlines!")
 	}
+
+	headlines = tempHeadlines
 }
 
 func GetHeadlineWithRNG(r *rand.Rand) NewHeadline {

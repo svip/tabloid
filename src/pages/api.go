@@ -1,19 +1,19 @@
 package pages
 
 import (
-	"net/http"
-	"headlines"
 	"encoding/json"
+	"headlines"
+	"net/http"
 )
 
 func Api(w http.ResponseWriter, r *http.Request) {
-	checkSeed()
+	askToCheckSeed()
 	headline := headlines.GetHeadlineWithRNG(rnd)
-	
+
 	enc := json.NewEncoder(w)
-	
+
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	
+
 	enc.Encode(struct {
 		Headline string
 		URLs     []string
