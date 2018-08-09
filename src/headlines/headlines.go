@@ -76,14 +76,15 @@ func addHeadlines(text, href string) {
 	reTrim := regexp.MustCompile("[ \n\t ]+")
 	reOrim := regexp.MustCompile("([;:\\.]$|^[-–] | [-–]$)")
 	reHref := regexp.MustCompile("[^\\/\\.]+\\.[^\\/\\.]+\\/")
+	reHyph := regexp.MustCompile("(\\p{L})- (\\p{L})")
 
 	// Make sure all line breaks are turned into spaces.
 	text = strings.TrimSpace(reTrim.ReplaceAllString(text, " "))
 	s := re.FindAllString(text, -1)
 	if len(s) < 2 {
 		return // If we don't get at least two headlines from this headline,
-		       // we don't care.  Because it usually means the headline isn't
-		       // good material for our purpose.
+		// we don't care.  Because it usually means the headline isn't
+		// good material for our purpose.
 	}
 	for _, line := range s {
 		line = strings.TrimSpace(line)
@@ -97,6 +98,7 @@ func addHeadlines(text, href string) {
 		}
 		line = reTrim.ReplaceAllString(line, " ")
 		line = reOrim.ReplaceAllString(line, "")
+		line = reHyph.ReplaceAllString(line, "$1$2")
 		log.Println(reHref.FindString(href), line)
 		//log.Println(href)
 		tempHeadlines = append(tempHeadlines, Headline{line, href})
