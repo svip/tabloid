@@ -70,8 +70,8 @@ func (h NewHeadline) Title() template.HTML {
 }
 
 // Storage of headlines
-var headlines []Headline
-var tempHeadlines []Headline
+var headlines []*Headline
+var tempHeadlines []*Headline
 
 // Storage of created headlines
 var newHeadlines []NewHeadline
@@ -124,7 +124,7 @@ func addHeadlines(text, href string) {
 		line = reOrim.ReplaceAllString(line, "")
 		line = reHyph.ReplaceAllString(line, "$1$2")
 		log.Println(reHref.FindString(href), line)
-		tempHeadlines = append(tempHeadlines, Headline{line, href, 0})
+		tempHeadlines = append(tempHeadlines, &Headline{line, href, 0})
 	}
 }
 
@@ -179,7 +179,7 @@ func fillFromDomain(newssite newsSite) {
 func UpdateHeadlines() {
 	// Work on the temporary list before copying it to the main one.
 	// For some suggestion of thread-safety.  Wat?
-	tempHeadlines = make([]Headline, 0)
+	tempHeadlines = make([]*Headline, 0)
 
 	fillFromDomain(eb)
 	fillFromDomain(bt)
@@ -216,8 +216,8 @@ func GetHeadlineWithRNG(r *rand.Rand) NewHeadline {
 		sep = ""
 	}
 	nh := NewHeadline{
-		&headlines[no1],
-		&headlines[no2],
+		headlines[no1],
+		headlines[no2],
 		sep,
 		generateToken(r),
 		time.Now(),
