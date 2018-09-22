@@ -10,6 +10,7 @@ import (
 
 func apiVote(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
+	
 	if r.Method != "POST" {
 		w.WriteHeader(405)
 		enc.Encode(struct {
@@ -66,17 +67,32 @@ func apiVote(w http.ResponseWriter, r *http.Request) {
 	})	
 }
 
+func apiTop5(w http.ResponseWriter, r *http.Request) {
+	hs := headlines.GetTopHeadlines(5)
+	
+	enc := json.NewEncoder(w)
+	
+	enc.Encode(struct {
+		Headlines []headlines.SimpleHeadline
+	}{
+		hs,
+	})
+}
+
 func Api(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	if strings.HasPrefix(r.URL.Path, "/api/vote") {
 		apiVote(w, r)
+		return
+	}
+	if strings.HasPrefix(r.URL.Path, "/api/top5") {
+		apiTop5(w, r)
 		return
 	}
 	askToCheckSeed()
 	headline := headlines.GetHeadlineWithRNG(rnd)
 
 	enc := json.NewEncoder(w)
-
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 
 	enc.Encode(struct {
 		Headline string

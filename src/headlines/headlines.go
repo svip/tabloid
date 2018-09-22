@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 	"encoding/json"
 	"os"
+	"sort"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -75,6 +76,12 @@ var tempHeadlines []*Headline
 
 // Storage of created headlines
 var newHeadlines []NewHeadline
+
+type ByPoints []*Headline
+
+func (p ByPoints) Len() int           { return len(p) }
+func (p ByPoints) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p ByPoints) Less(i, j int) bool { return p[i].Points > p[j].Points }
 
 type newsSite int
 
@@ -264,6 +271,27 @@ func VoteHeadlineDown(token string) bool {
 	nh.No2.VoteDown()
 	saveHeadlinesToFile()
 	return true
+}
+
+func getTopHeadlines(no int) []*Headline {
+	tmp := make([]*Headline, len(headlines))
+	copy(tmp, headlines)
+	sort.Sort(ByPoints(tmp))
+	return tmp[:no]
+}
+
+type SimpleHeadline struct {
+	Headline string
+	Points   int
+}
+
+func GetTopHeadlines(no int) []SimpleHeadline {
+	hs := getTopHeadlines(no)
+	var s []SimpleHeadline
+	for _, h := range hs {
+		s = append(s, SimpleHeadline{h.Headline, h.Points})
+	}
+	return s
 }
 
 func saveHeadlinesToFile() {
