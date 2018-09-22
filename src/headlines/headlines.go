@@ -11,6 +11,8 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf8"
+	"encoding/json"
+	"os"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -21,9 +23,12 @@ var headlineT *template.Template
 var headlineshT *template.Template
 var headlinestT *template.Template
 
+const HEADLINESFILE = "headlines.json"
+
 type Headline struct {
 	Headline string
 	URL      string
+	Points   int
 }
 
 func (h Headline) Print() template.HTML {
@@ -36,10 +41,20 @@ func (h Headline) Print() template.HTML {
 	}
 }
 
+func (h *Headline) VoteUp() {
+	h.Points += 1
+}
+
+func (h *Headline) VoteDown() {
+	h.Points -= 1
+}
+
 type NewHeadline struct {
-	No1       Headline
-	No2       Headline
+	No1       *Headline
+	No2       *Headline
 	Separator string
+	Token     string
+	Created   time.Time
 }
 
 func (h NewHeadline) Print() template.HTML {
@@ -57,6 +72,9 @@ func (h NewHeadline) Title() template.HTML {
 // Storage of headlines
 var headlines []Headline
 var tempHeadlines []Headline
+
+// Storage of created headlines
+var newHeadlines []NewHeadline
 
 type newsSite int
 
@@ -79,8 +97,8 @@ func addHeadlines(text, href string) {
 	// Or rather, this doesn't split but finds the headlines we're
 	// looking for.  Because you cannot split on something you wish to include.
 	re := regexp.MustCompile("(.+?([!\\?;:] +| +[-–] +|[;:] +[-–] +|$))")
-	reTrim := regexp.MustCompile("[ \n\t ]+")
-	reOrim := regexp.MustCompile("([;:\\.]$|^[-–] | [-–]$)")
+	reTrim := regexp.MustCompile("[ \n\t ]+") // whitespace
+	reOrim := regexp.MustCompile("([;:\\.]$|^[-–\\+] | [-–]$)") // ends
 	reHref := regexp.MustCompile("[^\\/\\.]+\\.[^\\/\\.]+\\/")
 	reHyph := regexp.MustCompile("(\\p{L})- (\\p{L})")
 
@@ -106,7 +124,7 @@ func addHeadlines(text, href string) {
 		line = reOrim.ReplaceAllString(line, "")
 		line = reHyph.ReplaceAllString(line, "$1$2")
 		log.Println(reHref.FindString(href), line)
-		tempHeadlines = append(tempHeadlines, Headline{line, href})
+		tempHeadlines = append(tempHeadlines, Headline{line, href, 0})
 	}
 }
 
@@ -174,6 +192,13 @@ func UpdateHeadlines() {
 	}
 
 	headlines = append(headlines, tempHeadlines...)
+	saveHeadlinesToFile()
+}
+
+func generateToken(r *rand.Rand) string {
+	b := make([]byte, 16)
+	r.Read(b)
+	return fmt.Sprintf("%x", b)
 }
 
 func GetHeadlineWithRNG(r *rand.Rand) NewHeadline {
@@ -190,11 +215,15 @@ func GetHeadlineWithRNG(r *rand.Rand) NewHeadline {
 	if strings.ContainsAny(headlines[no1].Headline[len(headlines[no1].Headline)-1:], "?!") {
 		sep = ""
 	}
-	return NewHeadline{
-		headlines[no1],
-		headlines[no2],
+	nh := NewHeadline{
+		&headlines[no1],
+		&headlines[no2],
 		sep,
+		generateToken(r),
+		time.Now(),
 	}
+	newHeadlines = append(newHeadlines, nh)
+	return nh
 }
 
 func GetHeadline() NewHeadline {
@@ -202,7 +231,71 @@ func GetHeadline() NewHeadline {
 	return GetHeadlineWithRNG(rng)
 }
 
+func findNewHeadline(token string) (NewHeadline, bool) {
+	for i, nh := range newHeadlines {
+		if time.Since(nh.Created) > time.Hour * 2 {
+			newHeadlines = append(newHeadlines[:i], newHeadlines[i+1:]...)
+			continue
+		}
+		if nh.Token == token {
+			return nh, true
+		}
+	}
+	return NewHeadline{}, false
+}
+
+func VoteHeadlineUp(token string) bool {
+	nh, ok := findNewHeadline(token)
+	if !ok {
+		return false
+	}
+	nh.No1.VoteUp()
+	nh.No2.VoteUp()
+	saveHeadlinesToFile()
+	return true
+}
+
+func VoteHeadlineDown(token string) bool {
+	nh, ok := findNewHeadline(token)
+	if !ok {
+		return false
+	}
+	nh.No1.VoteDown()
+	nh.No2.VoteDown()
+	saveHeadlinesToFile()
+	return true
+}
+
+func saveHeadlinesToFile() {
+	f, err := os.Create(HEADLINESFILE)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer f.Close()
+	
+	enc := json.NewEncoder(f)
+	if err := enc.Encode(&headlines); err != nil {
+		log.Println(err)
+	}
+}
+
+func loadHeadlinesFromFile() {
+	f, err := os.Open(HEADLINESFILE)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer f.Close()
+	
+	dec := json.NewDecoder(f)
+	if err := dec.Decode(&headlines); err != nil {
+		log.Println(err)
+	}
+}
+
 func init() {
+	loadHeadlinesFromFile()
 	// Prepare our global variable.
 	var err error
 	headlineT, err = template.New("headline").Parse(`<a href="{{.URL}}">{{.Headline}}</a>`)
